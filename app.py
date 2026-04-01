@@ -11,8 +11,8 @@ def load_data():
     try:
         # utf-8-sig で読み込み
         df = pd.read_csv("quiz_data.csv", encoding="utf-8-sig")
-        # 前後の空白削除と型変換
-        df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+        # 前後の空白削除と型変換 (applymap を map に修正)
+        df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
         # 選択肢をリストに変換
         df['options'] = df['options'].apply(lambda x: [i.strip() for i in str(x).split('|')])
         df['answer'] = df['answer'].astype(str)
@@ -56,7 +56,7 @@ if not st.session_state.quiz_started:
         "2025年（令和7年）10月公表分", "2025年（令和7年）4月公表分", "2024年（令和6年）10月公表分",
         "2024年（令和6年）4月公表分", "2023年（令和5年）10月公表分", "2023年（令和5年）4月公表分",
         "2022年（令和4年）10月公表分", "2022年（令和4年）4月公表分", "2021年（令和3年）10月公表分",
-        "2021年（令和3年）4月公表分", "2020年（令和2年）10月公元分"
+        "2021年（令和3年）4月公表分", "2020年（令和2年）10月公表分"
     ]
     
     categories = ["全科目一括", "エックス線の管理に関する知識", "関係法令", "エックス線の測定に関する知識", "エックス線の生体に与える影響に関する知識"]
@@ -76,7 +76,7 @@ elif not st.session_state.quiz_finished:
     current_questions = st.session_state.selected_questions
     
     if not current_questions:
-        st.warning("選択された条件に該当する問題が見つかりませんでした。")
+        st.warning("選択された条件に該当する問題が見見つかりませんでした。")
         if st.button("メニューに戻る"):
             st.session_state.quiz_started = False
             st.rerun()
