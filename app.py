@@ -12,15 +12,14 @@ def load_data():
     try:
         # utf-8-sig で読み込み
         df = pd.read_csv("quiz_data.csv", encoding="utf-8-sig")
-        # 前後の空白削除と型変換 (applymap を map に修正)
+        # 前後の空白削除と型変換
         df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
         
-        # 選択肢の分割ロジックを強化 (| がなくても （１）〜 で分割する)
+        # 選択肢の分割ロジック (| がなくても （１）〜 で分割する)
         def split_options(x):
             s = str(x)
             if '|' in s:
                 return [i.strip() for i in s.split('|')]
-            # 「（１）」などの全角カッコの数字を基準に分割（先読み正規表現）
             parts = re.split(r'(?=（[１２３４５]）)', s)
             return [p.strip() for p in parts if p.strip()]
 
@@ -45,7 +44,7 @@ def start_quiz(selected_session, category_filter):
     if category_filter != "全科目一括":
         filtered_pool = [q for q in filtered_pool if q['category'] == category_filter]
 
-    # IDを数値として抽出してソート（問10が問2より後に来るようにする）
+    # IDを数値として抽出してソート
     def get_id_num(id_str):
         try:
             return int(id_str.replace('問', ''))
@@ -102,7 +101,15 @@ elif not st.session_state.quiz_finished:
         st.progress((st.session_state.idx) / len(current_questions))
         st.subheader(f"{current_q['id']} / {len(current_questions)}")
         st.markdown(f"**分野: {current_q['category']}**")
-        st.markdown(f"#### {current_q['question']}")
+        
+        # --- 質問文の見やすさ改善 ---
+        q_text = current_q['question']
+        # A: B: C: D: の前に改行と太字を適用
+        for label in ["A:", "B:", "C:", "D:", "E:"]:
+            q_text = q_text.replace(f" {label}", f"\n\n**{label}** ")
+            q_text = q_text.replace(f"{label}", f"**{label}** ")
+        
+        st.markdown(f"#### {q_text}")
         
         user_ans = st.radio("選択肢を選んでください:", current_q['options'], key=f"q_{st.session_state.idx}")
         
