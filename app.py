@@ -35,8 +35,14 @@ def start_quiz(selected_session, category_filter):
     if category_filter != "全科目一括":
         filtered_pool = [q for q in filtered_pool if q['category'] == category_filter]
 
-    # 実施回別なので、問題番号順にソート（ランダムにしない）
-    st.session_state.selected_questions = sorted(filtered_pool, key=lambda x: x['id'])
+    # 【重要修正】IDを数値として抽出してソート（問10が問2より後に来るようにする）
+    def get_id_num(id_str):
+        try:
+            return int(id_str.replace('問', ''))
+        except:
+            return 0
+
+    st.session_state.selected_questions = sorted(filtered_pool, key=lambda x: get_id_num(x['id']))
     
     st.session_state.idx = 0
     st.session_state.score = 0
@@ -51,7 +57,7 @@ st.title("☢️ エックス線作業主任者 模擬テスト")
 st.caption("過去問をマスターして、足切りラインを確実に突破しましょう")
 
 if not st.session_state.quiz_started:
-    # 実施回のリスト定義
+    # 実施回のリスト（タイプミスを修正: 公元分 -> 公表分）
     sessions = [
         "2025年（令和7年）10月公表分", "2025年（令和7年）4月公表分", "2024年（令和6年）10月公表分",
         "2024年（令和6年）4月公表分", "2023年（令和5年）10月公表分", "2023年（令和5年）4月公表分",
@@ -76,7 +82,7 @@ elif not st.session_state.quiz_finished:
     current_questions = st.session_state.selected_questions
     
     if not current_questions:
-        st.warning("選択された条件に該当する問題が見見つかりませんでした。")
+        st.warning("選択された条件に該当する問題が見つかりませんでした。")
         if st.button("メニューに戻る"):
             st.session_state.quiz_started = False
             st.rerun()
@@ -95,8 +101,8 @@ elif not st.session_state.quiz_finished:
                 st.session_state.show_answer = True
                 st.rerun()
         else:
-            # 正解判定（カッコの全角半角やインデックスに対応できるよう先頭文字で比較）
-            user_choice_num = user_ans[1:2] # （１）の1の部分
+            # 正解判定
+            user_choice_num = user_ans[1:2]
             correct_num = current_q['answer'][1:2]
             cat = current_q['category']
             
