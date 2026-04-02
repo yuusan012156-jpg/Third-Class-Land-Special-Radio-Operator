@@ -104,9 +104,8 @@ elif not st.session_state.quiz_finished:
         
         # --- 質問文の見やすさ改善ロジック ---
         q_text = current_q['question']
-        # 正規表現で A: B: C: 等を検出し、その前に改行を入れて太字にする
-        # すでに ** がついている場合やスペースの有無を問わず、きれいにフォーマットする
-        q_text = re.sub(r'\s*(\*\*|)([A-E]:)\s*(\*\*|)\s*', r'\n\n**\1** ', q_text)
+        # 修正: ラベル部分（A: 〜 E:）を確実にキャプチャし、太字と改行を適用
+        q_text = re.sub(r'\s*(?:\*\*|)([A-E]:)\s*(?:\*\*|)\s*', r'\n\n**\1** ', q_text)
         
         st.markdown(f"#### {q_text}")
         
