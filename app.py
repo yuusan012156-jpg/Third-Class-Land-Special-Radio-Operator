@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import random
+import re
 
 # アプリの基本設定
 st.set_page_config(page_title="エックス線作業主任者 模擬テスト", page_icon="☢️")
@@ -13,8 +14,17 @@ def load_data():
         df = pd.read_csv("quiz_data.csv", encoding="utf-8-sig")
         # 前後の空白削除と型変換 (applymap を map に修正)
         df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
-        # 選択肢をリストに変換
-        df['options'] = df['options'].apply(lambda x: [i.strip() for i in str(x).split('|')])
+        
+        # 選択肢の分割ロジックを強化 (| がなくても （１）〜 で分割する)
+        def split_options(x):
+            s = str(x)
+            if '|' in s:
+                return [i.strip() for i in s.split('|')]
+            # 「（１）」などの全角カッコの数字を基準に分割（先読み正規表現）
+            parts = re.split(r'(?=（[１２３４５]）)', s)
+            return [p.strip() for p in parts if p.strip()]
+
+        df['options'] = df['options'].apply(split_options)
         df['answer'] = df['answer'].astype(str)
         return df.to_dict('records')
     except Exception as e:
@@ -35,7 +45,7 @@ def start_quiz(selected_session, category_filter):
     if category_filter != "全科目一括":
         filtered_pool = [q for q in filtered_pool if q['category'] == category_filter]
 
-    # 【重要修正】IDを数値として抽出してソート（問10が問2より後に来るようにする）
+    # IDを数値として抽出してソート（問10が問2より後に来るようにする）
     def get_id_num(id_str):
         try:
             return int(id_str.replace('問', ''))
@@ -57,7 +67,7 @@ st.title("☢️ エックス線作業主任者 模擬テスト")
 st.caption("過去問をマスターして、足切りラインを確実に突破しましょう")
 
 if not st.session_state.quiz_started:
-    # 実施回のリスト（タイプミスを修正: 公元分 -> 公表分）
+    # 実施回のリスト
     sessions = [
         "2025年（令和7年）10月公表分", "2025年（令和7年）4月公表分", "2024年（令和6年）10月公表分",
         "2024年（令和6年）4月公表分", "2023年（令和5年）10月公表分", "2023年（令和5年）4月公表分",
