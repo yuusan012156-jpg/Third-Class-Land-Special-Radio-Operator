@@ -65,7 +65,7 @@ st.title("☢️ エックス線作業主任者 過去問演習")
 if not st.session_state.quiz_started:
     # 選択画面
     sessions = sorted(df_all['session'].unique().tolist(), reverse=True)
-    categories = ["全科目一括", "エックス線の管理に関する知識", "関係法令", "エックス線の測定に関する知識", "エックス線の生体に与える影響に関する知識"]
+    categories = ["全科目一括", "エックス線の管理に関する知識", "関係法令", "エックス線の測定に関する知識", "生体に与える影響"]
 
     col1, col2 = st.columns(2)
     with col1:
